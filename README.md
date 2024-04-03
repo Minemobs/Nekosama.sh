@@ -10,3 +10,4 @@ A simple downloader written in bash
  - curl-impersonator
  - jq
 
+https://github.com/Minemobs/Nekosama.sh/assets/38861340/61c97b63-feca-40c0-b958-5db8b05c4d05
