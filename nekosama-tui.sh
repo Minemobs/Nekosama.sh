@@ -34,7 +34,7 @@ fi
 # printf "User choose to watch '%s'\n" "$SERIE_NAME"
 SERIE_JSON="$(echo "$JSON" | jq 'map(select(.title == "'"$SERIE_NAME"'")) | .[]')"
 SERIE_URL="$(echo "$SERIE_JSON" | jq -r '.url' | cut -d "/" -f 4 | cut -d '_' -f 1)"
-SERIE_EPISODES="$(echo "$SERIE_JSON" | jq -r '.nb_eps')"
+SERIE_EPISODES="$(echo "$SERIE_JSON" | jq -r '.nb_eps' | cut -d " " -f 1)"
 if [[ $SERIE_EPISODES != "Film" ]]; then
   EPISODE="$(gum choose --header "Episode of $SERIE_NAME" $(generateSequence "$SERIE_EPISODES"))"
   if [ $? -ne 0 ]; then
