@@ -8,6 +8,8 @@ if ! [ -x "$(command -v jq)" ]; then
   exit 1
 fi
 
+mkdir "/tmp/nekosama" &> /dev/null
+
 function generateSequence {
   local sequence=""
   local nbrOfEpisodes=$1
@@ -26,15 +28,22 @@ function generateSequence {
 }
 
 function custom_fzf {
-  fzf --border-label-pos 5:top --color=label:italic:red "$@"
+  fzf --no-sort --border-label-pos 5:top --color=label:italic:red "$@"
 }
 
 JSON="$(curl -s https://neko-sama.fr/animes-search-vostfr.json)"
+echo "$JSON" >| "/tmp/nekosama/vostfr.json"
 
-SERIE_NAME="$(echo "$JSON" | jq -r '.[] | .title' | custom_fzf --border-label "VOSTFR Anime Selection" --height 50%)"
+if [ -x "$(command -v kitty )" ]; then
+  SERIE_NAME="$(echo "$JSON" | jq -r '.[] | .title' | custom_fzf --border-label "VOSTFR Anime Selection" --height 50% --preview='kitty icat --clear --transfer-mode=memory --unicode-placeholder --stdin=no --place="${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}@0x0" $(cat /tmp/nekosama/vostfr.json | jq -r ".[{n}] | .url_image")')"
+else
+  SERIE_NAME="$(echo "$JSON" | jq -r '.[] | .title' | custom_fzf --border-label "VOSTFR Anime Selection" --height 50%)"
+fi
+
 if [ $? -ne 0 ]; then
   exit 0
 fi
+
 SERIE_JSON="$(echo "$JSON" | jq 'map(select(.title == "'"$SERIE_NAME"'")) | .[]')"
 SERIE_URL="$(echo "$SERIE_JSON" | jq -r '.url' | cut -d "/" -f 4 | cut -d '_' -f 1)"
 SERIE_EPISODES="$(curl https://neko-sama.fr"$(echo "$SERIE_JSON" | jq -r '.url')" | grep --only-matching -E "episodes = \[\{.+\]" | cut -d "=" -f 2 | jq .[-1].num)"
@@ -48,4 +57,6 @@ if [[ $SERIE_EPISODES != "Film" ]]; then
 else
   EPISODE="01"
 fi
+
+rm "/tmp/nekosama/vostfr.json" &> /dev/null
 printf "https://neko-sama.fr/anime/episode/%s-%s_vostfr\n" "$SERIE_URL" "$EPISODE"

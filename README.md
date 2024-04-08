@@ -8,5 +8,5 @@ A simple downloader written in bash
 ## Requirements:
  - fzf (needed for `nekosama-tui.sh`)
  - jq (needed for `nekosama-tui.sh`)
+ - Kitty (optional, adds poster preview, needed for `nekosama-tui.sh`)
 
-https://github.com/Minemobs/Nekosama.sh/assets/38861340/61c97b63-feca-40c0-b958-5db8b05c4d05

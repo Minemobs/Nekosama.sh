@@ -16,9 +16,11 @@ function ccurl {
 
 mkdir "/tmp/nekosama" || true
 
-ANIME_NAME=$(echo "$1" | rev | cut -d "/" -f 1 | rev)
+ANIME_HTML=$(curl "$1")
+ANIME_NAME=$(echo "$ANIME_HTML" | grep -oP "(?<=<h1>).+(?= VOSTFR<\/h1>)")
+ANIME_URL_ID=$(echo "$1" | rev | cut -d "/" -f 1 | rev)
 echo "Getting the Video provider's URL for $ANIME_NAME"
-VIDEO_PROVIDER_URL=$(ccurl "$1" | grep -E "\s+video\[0\] = 'https://.+'" | cut -d "'" -f 2)
+VIDEO_PROVIDER_URL=$(echo "$ANIME_HTML" | grep -E "\s+video\[0\] = 'https://.+'" | cut -d "'" -f 2)
 URL=""
 
 fv_parse () {
@@ -42,12 +44,13 @@ esac
 
 old_pwd=$(pwd)
 
-mkdir "/tmp/nekosama/$ANIME_NAME" || fail "Couldn't create directory in /tmp/nekosama" 3
-cd "/tmp/nekosama/$ANIME_NAME" || fail "Couldn't CD in /tmp/$ANIME_NAME" 4
+mkdir "/tmp/nekosama/$ANIME_URL_ID" || fail "Couldn't create directory in /tmp/nekosama" 3
+cd "/tmp/nekosama/$ANIME_URL_ID" || fail "Couldn't CD in /tmp/$ANIME_URL_ID" 4
 M3U_URLS=$(ccurl "$URL" | grep -E "^https://")
 curl --remote-name-all --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 $M3U_URLS || fail "Couldn't download all .ts files" 5
 for i in $(\ls *.ts | sort -V); do echo "file '$i'"; done >> mylist.txt && ffmpeg -f concat -i mylist.txt -c copy -bsf:a aac_adtstoasc video.mp4 && rm *.ts && rm mylist.txt
 
 cd "$old_pwd" || exit
-mpv "/tmp/nekosama/$ANIME_NAME/video.mp4"
-rm -rf "/tmp/nekosama/$ANIME_NAME"
+notify-send -a "NekoSama.sh" --category="transfer.complete" "NekoSama.sh" "Finished Download <u>$ANIME_NAME</u>"
+mpv "/tmp/nekosama/$ANIME_URL_ID/video.mp4"
+rm -rf "/tmp/nekosama/$ANIME_URL_ID"
