@@ -10,3 +10,4 @@ A simple downloader written in bash
  - jq (needed for `nekosama-tui.sh`)
  - Kitty (optional, adds poster preview, needed for `nekosama-tui.sh`)
 
+https://github.com/Minemobs/Nekosama.sh/assets/38861340/861933e4-6b99-4531-ae40-d2cd96edc2d6
